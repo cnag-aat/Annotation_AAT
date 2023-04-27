@@ -1,0 +1,26 @@
+name: /software/assembly/conda/EVM
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - evidencemodeler=1.1.1=hdfd78af_3
+  - libgcc-ng=12.2.0=h65d4601_19
+  - libgomp=12.2.0=h65d4601_19
+  - libnsl=2.0.0=h7f98852_0
+  - perl=5.32.1=2_h7f98852_perl5
+  - perl-business-isbn=3.007=pl5321hdfd78af_0
+  - perl-business-isbn-data=20210112.006=pl5321hdfd78af_0
+  - perl-carp=1.38=pl5321hdfd78af_4
+  - perl-constant=1.33=pl5321hdfd78af_2
+  - perl-data-dumper=2.183=pl5321hec16e2b_1
+  - perl-dbi=1.643=pl5321hec16e2b_1
+  - perl-encode=3.19=pl5321hec16e2b_1
+  - perl-exporter=5.72=pl5321hdfd78af_2
+  - perl-extutils-makemaker=7.64=pl5321hd8ed1ab_0
+  - perl-mime-base64=3.16=pl5321hec16e2b_2
+  - perl-parent=0.236=pl5321hdfd78af_2
+  - perl-uri=5.12=pl5321hdfd78af_0
+prefix: /software/assembly/conda/EVM
