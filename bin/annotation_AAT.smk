@@ -75,6 +75,12 @@ if config["Parameters"]["run_non_coding"]:
   targets.append( config["Outputs"]["out_tRNAscan"])
   targets.append (config["Outputs"]["ncRNA_annotation_dir"] + config["update"]["project_name"][0] + "nc" + config["ncRNA_annotation"]["ncRNA_version"] + ".gff3")
 
+if config["Parameters"]["get_JBrowse"]:
+  targets.append(working_dir + "jbrowse/tracks.tar.gz")
+  targets.append(working_dir + "jbrowse/seq.tar.gz")
+  if config["Inputs"]["genome_lengths"]:
+    targets.append(working_dir + "jbrowse/" + base + ".GC.bw")
+
 #1- Define rule all
 rule all:
   input:
@@ -84,7 +90,9 @@ rule all:
     logs_dir + str(date) + ".j%j.rule_all.err"
 
 #2- Include modules
-include: "../modules/run_gene_predictors.smk"
+include: "../modules/run_gene_predictors.nogeneidjobarray.smk"
 include: "../modules/run_evidence_based.smk"
 include: "../modules/run_combiners.smk"
 include: "../modules/run_noncoding.smk"
+if config["Parameters"]["get_JBrowse"]:
+  include: "../modules/get_jbrowse.smk"

@@ -213,16 +213,28 @@ rule geneid_introns:
     geneid_parameters = "human.params.txt",
     junctions = "junctions.gff3"
   output:
-    out_prediction_geneid_introns = "assembly.masked.geneid_introns_gene_predictions.gff3",
+    predictions = "assembly.masked.geneid_introns_gene_predictions.gff3",
   params:
     scripts_dir = "scripts/",
     geneid_options = " -3nU ",
     path = "/software/assembly/src/geneid/",
     prefix = "assembly.masked",
+    rmcmd = "cd ../..; rm -r $TMPDIR/geneid_introns;"
   threads: 2
   shell:
-    "{params.path}bin/geneid -R {input.juctions} -P {input.geneid_parameters} {params.geneid_options} "+\
-    "{input.fasta}  > {output.out_prediction_geneid_introns}; "
+    "mkdir -p $TMPDIR/geneid_introns;"
+    "cd $TMPDIR/geneid_introns;"
+    "cp {input.junctions} hints.gff;"
+    "sort -k1,1 -k4,5n -k7,7 hints.gff > hints.sorted.gff;"
+    "ln -s {input.fasta} masked_genome_chunk.fa;"
+    "cat hints.sorted.gff | cut -f 1 | uniq > seqs_with_hints.ids;"
+    "{params.scripts_dir}/filter_fasta_from_ids.pl -f masked_genome_chunk.fa -l seqs_with_hints.ids -a > masked_genome_chunk.with_hints.fa;"
+    "{params.scripts_dir}/rungeneidwithhints.pl masked_genome_chunk.with_hints.fa hints.sorted.gff " +\
+    " {input.geneid_parameters} {params.geneid_options} {params.path};"
+    "cat *geneid_introns.gff3  > {output.predictions};"
+    "{params.rmcmd};"
+    # "{params.path}bin/geneid -R {input.junctions} -P {input.geneid_parameters} {params.geneid_options} "+\
+    # "{input.fasta}  > {output.predictions}; "
 
 rule genemark:
   input:

@@ -28,6 +28,7 @@ rule merge_gffs:
   threads: 1
   shell: 
     "cat {params.array_inputs} > {output.out};"
+    "sleep 4m;"
 
 rule predictions4EVM:
   input:
@@ -47,3 +48,4 @@ rule predictions4EVM:
     "ln -s {output.EVM_out} {params.link_out};"
     "cd {params.EVM_dir};"
     "{params.create_weights}"
+    "sleep 4m;"
