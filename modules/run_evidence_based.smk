@@ -95,34 +95,34 @@ if config["Parameters"]["run_miniprot"]:
   if not os.path.exists(dirMiniprotOutput + "/logs"):
     os.makedirs(dirMiniprotOutput + "/logs")
 
-miniprot_weights = config["miniprot"]["miniprot_weights"]
-create_weights_miniprot = ""
-f = 1
-for i in range(len(miniprot_weights)):
-  create_weights_miniprot = create_weights_miniprot + "echo \"PROTEIN\tminiprot\t" + str(miniprot_weights[i]) + "\">> weights_" + str(f) + ".txt;";      
-  f = f + 1
+  miniprot_weights = config["miniprot"]["miniprot_weights"]
+  create_weights_miniprot = ""
+  f = 1
+  for i in range(len(miniprot_weights)):
+    create_weights_miniprot = create_weights_miniprot + "echo \"PROTEIN\tminiprot\t" + str(miniprot_weights[i]) + "\">> weights_" + str(f) + ".txt;";      
+    f = f + 1
 
-additional_miniprot_opts =  config["miniprot"]["additional_miniprot_options"]
-if additional_miniprot_opts == None:
-  additional_miniprot_opts = ""
+  additional_miniprot_opts =  config["miniprot"]["additional_miniprot_options"]
+  if additional_miniprot_opts == None:
+    additional_miniprot_opts = ""
 
-use rule miniprot from align_evidence_workflow with:
-  input:
-    genome = genome,
-    proteins = config["Inputs"]["proteins"]
-  output:
-    out_cds = config["Outputs"]["miniprot_cds"],
-    out_gene = config["Outputs"]["miniprot_gene"],
-    EVM_out = EVM_dir + "proteins.gff3"
-  params: 
-    miniprot_path = config["miniprot"]["miniprot_path"],
-    miniprot_dir = dirMiniprotOutput,
-    additional_opts = additional_miniprot_opts,  
-    create_weights = create_weights_miniprot,
-    EVM_dir = EVM_dir,
-  log:
-    dirMiniprotOutput + "/logs/" + str(date) + ".j%j.miniprot." + name + ".out",
-    dirMiniprotOutput + "/logs/" + str(date) + ".j%j.miniprot." + name + ".err",
-  benchmark:
-    dirMiniprotOutput + "/logs/" + str(date) + ".miniprot." + name + ".benchmark.txt" 
-  threads: config["miniprot"]["miniprot_cores"]
+  use rule miniprot from align_evidence_workflow with:
+    input:
+      genome = genome,
+      proteins = config["Inputs"]["proteins"]
+    output:
+      out_cds = config["Outputs"]["miniprot_cds"],
+      out_gene = config["Outputs"]["miniprot_gene"],
+      EVM_out = EVM_dir + "proteins.gff3"
+    params: 
+      miniprot_path = config["miniprot"]["miniprot_path"],
+      miniprot_dir = dirMiniprotOutput,
+      additional_opts = additional_miniprot_opts,  
+      create_weights = create_weights_miniprot,
+      EVM_dir = EVM_dir,
+    log:
+      dirMiniprotOutput + "/logs/" + str(date) + ".j%j.miniprot." + name + ".out",
+      dirMiniprotOutput + "/logs/" + str(date) + ".j%j.miniprot." + name + ".err",
+    benchmark:
+      dirMiniprotOutput + "/logs/" + str(date) + ".miniprot." + name + ".benchmark.txt" 
+    threads: config["miniprot"]["miniprot_cores"]

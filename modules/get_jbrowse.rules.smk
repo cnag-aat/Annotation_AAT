@@ -8,7 +8,8 @@ rule browse_seq:
     input:
       genome= "genome.fa"
     output:
-      outdir = directory("seq")
+     # outdir = "seq",
+      checkpoint = "seq.ok"
     params:
       jbrowse_dir = "jbrowse",
     conda:
@@ -17,12 +18,13 @@ rule browse_seq:
     shell:
         "cd {params.jbrowse_dir};"
         "$CONDA_PREFIX/bin/prepare-refseqs.pl --fasta {input.genome}  --out $PWD;"
+        "touch {output.checkpoint};"
 
 rule browse_tracks:
     input:
         gff = "geneid_predictions.gff3"
     output:
-        outdir = directory("tracks/Geneid")
+        checkpoint = "browse.Geneid.done"
     params:
         jbrowse_dir = "jbrowse",
         processed_gff = "geneid_predicions",
@@ -39,16 +41,29 @@ rule browse_tracks:
         "$CONDA_PREFIX/bin/flatfile-to-json.pl --gff {params.processed_gff} --out $PWD " +\
         " --getSubfeatures --getPhase --getLabel --type {params.type} " +\
         " --trackLabel {params.label} --className {params.className};"
+        "touch {output.checkpoint};"
 
 rule get_tar:
   input:
-    dir = ["tracks"]
+    checkpoints = "browse.Geneid.done"
   output:
-    tar = "tracks.tar.gz"
+    tar = "tracks.tar.gz",
   params:
-  shell:
-    "tar -zcvf {output.tar} {input.dir};"
-    "rm -r {input.dir};"
+    jbdir = "jbrowse",
+    dir = "tracks"
+  run:
+    if isinstance(params.dir, list):
+      nfiles = []
+      for file in params.dir:
+        nfile = file.replace(params.jbdir, "")
+        nfiles.append(nfile)
+        #print (nfile)
+    else:
+      nfiles = params.dir.replace(params.jbdir, "")
+
+    shell("tar -C {params.jbdir} -zcvf {output.tar} {nfiles};"
+          "rm -r {params.dir};"
+    )
 
 rule get_GCcontent:
   input:

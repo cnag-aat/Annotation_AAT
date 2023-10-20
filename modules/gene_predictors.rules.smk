@@ -26,6 +26,7 @@ rule augustus_jobarray:
     "../envs/augustus3.5.0.yaml"
   threads: 1
   shell:
+      "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
       "augustus --species={params.species} --alternatives-from-sampling={params.alternatives_from_sampling} " +\
       "--alternatives-from-evidence={params.alternatives_from_evidence} --sample={params.sample} --gff3={params.gff3}" +\
       " --noInFrameStop={params.noInFrameStop} --uniqueGeneId={params.uniqueGeneId} --maxtracks={params.maxtracks} --strand={params.strand}" +\
@@ -55,6 +56,7 @@ rule augustus:
     "../envs/augustus3.5.0.yaml"
   threads: 1
   shell:
+      "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
       "augustus --species={params.species} --alternatives-from-sampling={params.alternatives_from_sampling} " +\
       "--alternatives-from-evidence={params.alternatives_from_evidence} --sample={params.sample} --gff3={params.gff3}" +\
       " --noInFrameStop={params.noInFrameStop} --uniqueGeneId={params.uniqueGeneId} --maxtracks={params.maxtracks} --strand={params.strand}" +\
@@ -89,6 +91,7 @@ rule augustus_hints_jobarray:
     "../envs/augustus3.5.0.yaml"  
   threads: 1
   shell:
+    "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
     "dir=$TMPDIR/$SLURM_ARRAY_JOB_ID.$SLURM_ARRAY_TASK_ID;"
     "echo $dir;"
     "mkdir -p $dir;"
@@ -132,6 +135,7 @@ rule augustus_hints:
     "../envs/augustus3.5.0.yaml"  
   threads: 1
   shell:
+    "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"  
     "mkdir -p $TMPDIR/augustus_hints;"
     "cd $TMPDIR/augustus_hints;"
     "cp {input.hints} hints.gff;"

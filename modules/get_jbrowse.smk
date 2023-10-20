@@ -15,6 +15,8 @@ jlogs_dir = jbrowse_dir + "logs/"
 if not os.path.exists(jlogs_dir):
   os.makedirs(jlogs_dir)
 
+jbrowse_targets={}
+jbrowse_targets["tracks"] = []
 def create_browse_dictionary(program, gff, cmd="", classname = "pred", type = "mRNA"):
     tracks.append(jbrowse_dir + "tracks/" + program)
     browse[program] = {}
@@ -23,6 +25,7 @@ def create_browse_dictionary(program, gff, cmd="", classname = "pred", type = "m
     browse[program]["class"] = classname
     browse[program]["new_input"] = gff
     browse[program]["setup_cmd"] = cmd
+    jbrowse_targets["tracks"].append(jbrowse_dir + "browse." + program + ".ok")
     if cmd:
         browse[program]["new_input"] = jbrowse_dir + program + ".gff3"
 
@@ -31,7 +34,8 @@ use rule browse_seq from jbrowse_workflow with:
     input:
       genome= genome
     output:
-      outdir = directory(jbrowse_dir + "seq")
+     # outdir = directory(jbrowse_dir + "seq"),
+      checkpoint = jbrowse_dir + "seq.ok"
     conda:
         "../envs/JBrowse1.16.yaml"
     log:
@@ -128,13 +132,14 @@ if config["Inputs"]["RM_gff"]:
 
 tar_inputs = {}
 tar_inputs["tracks"] = tracks
+jbrowse_targets["seq"] = jbrowse_dir + "seq.ok"
 tar_inputs["seq"] = jbrowse_dir + "seq"
 
 use rule browse_tracks from jbrowse_workflow with:
     input:
         gff = lambda wildcards: browse[wildcards.prog]["input"] 
     output:
-        tar = directory(jbrowse_dir + "tracks/{prog}")
+        checkpoint = jbrowse_dir + "browse.{prog}.ok"
     params:
         jbrowse_dir = jbrowse_dir,
         processed_gff = lambda wildcards: browse[wildcards.prog]["new_input"],
@@ -152,10 +157,13 @@ use rule browse_tracks from jbrowse_workflow with:
     threads: 8
 
 use rule get_tar from jbrowse_workflow with:
-    input:
-        dir = lambda wildcards: tar_inputs[wildcards.indir]
+    input:        
+        checkpoints = lambda wildcards: jbrowse_targets[wildcards.indir]
     output:
         tar = jbrowse_dir + "{indir}.tar.gz"
+    params:
+        jbdir = jbrowse_dir,
+        dir = lambda wildcards: tar_inputs[wildcards.indir],
     log:
         jlogs_dir + str(date) + ".j%j.{indir}.get_tar.out",
         jlogs_dir + str(date) + ".j%j.{indir}.get_tar.err",

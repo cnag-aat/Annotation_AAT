@@ -76,7 +76,9 @@ rule EVM:
     "$CONDA_PREFIX/opt/evidencemodeler-1.1.1/EvmUtils/convert_EVM_outputs_to_GFF3.pl --partitions partitions_list.out --output_file_name evm_{wildcards.w}.out --genome {input.lgenome};" 
     "cat */evm_{wildcards.w}.out > {output.out};"
     "cat */evm_{wildcards.w}.out.gff3 > {output.evm_models};"
-   # "cd ..; rm -r $dir;"
+   # "find . -name {wildcards.w}.out | xargs cat > {output.out};"
+   # "find . -name {wildcards.w}.out.gff3 | xargs cat > {output.evm_models};"
+    "cd ..; rm -r $dir;"
     "echo 'EVM done!';"
 
 rule select_EVM:
