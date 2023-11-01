@@ -31,10 +31,10 @@ Sorry no project name and version have been given
 The final command would look like this: 
 
 ```
-bin/create_config_file.annotation.py --genome evidence/your_assembly.fa --genome-masked evidence/your_masked_assembly.fa --proteins evidence/uniprot_sprot.fasta --geneid-param evidence/pipeline_inputs/M.galloprovincialis.geneid.optimized.U12.param --species human --pasadb human.sqlite --pasa-conf evidence/pipeline_inputs/alignAssembly.v2.5.2.pasa2.config --update-conf evidence/pipeline_inputs/annotCompare_v2.5.2.pasa2.config --transcripts evidence/pipeline_inputs/transcript_evidence.fa --project-name HSAP1 A --create-database
+bin/create_config_file.annotation.py --genome evidence/your_assembly.fa --genome-masked evidence/your_masked_assembly.fa --proteins evidence/uniprot_sprot.fasta --geneid-param evidence/pipeline_inputs/H.sapiens.geneid.optimized.U12.param --species human --pasadb human.sqlite --pasa-conf evidence/pipeline_inputs/alignAssembly.v2.5.2.pasa2.config --update-conf evidence/pipeline_inputs/annotCompare_v2.5.2.pasa2.config --transcripts evidence/pipeline_inputs/transcript_evidence.fa --project-name HSAP1 A --create-database --trans-gtf stringtie.gtf --junctions alljunctions.gff
 ```
 
-# Tricks to obtain the different input options: 
+# Tricks to obtain the different input options
 
 1. If you do not know which **geneid parameters** to use, you can download the most appropriate ones from: https://genome.crg.es/software/geneid/index.html#parameters. Also, for Augustus species (--species option), check the available species  already trained for augustus or train your own).
 
@@ -43,6 +43,17 @@ bin/create_config_file.annotation.py --genome evidence/your_assembly.fa --genome
 3. The transcript_evidence fasta file is needed by PASA to run, but it can be almost empty if we just want to rely on the transcripts obtained from the RNAseq data. We recommend to download from NCBI some sequences present for your species, just one would be enough for it to run without crashing. 
 
 4. The project-name option is the prefix that will be assigned to all the annotated genes and the version of the annotation (eg. --project-name HSAP1 A)
+
+5. To get the transcripts.gtf file, that is optional but **higly recommended** since it is the way of giving the RNAseq evidence, stringtie or cufflinks need to be executed first, in order to obtain the gtf file. 
+
+6. Finally, it is also possible to run the gene predictors using extracted junctions from the RNAseq data. If you do not have this file or a way of getting them, it is possible to switch it off by doing: 
+
+```
+--no-geneid-introns --no-agustus-hints --no-genemark-ET
+```
+
+
+
 Once the 2 config files are produced, the pipeline can be launched using snakemake (tested and developed for Snakemake v6.3.0) like this:
 
 ``snakemake --notemp -j 999 --snakefile annotation_AAT.smk --configfile annotation.config --is --cluster-conf annotation.spec --use-conda --use-envmodules``
