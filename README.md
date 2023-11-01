@@ -34,7 +34,7 @@ The final command would look like this:
 bin/create_config_file.annotation.py --genome evidence/your_assembly.fa --genome-masked evidence/your_masked_assembly.fa --proteins evidence/uniprot_sprot.fasta --geneid-param evidence/pipeline_inputs/M.galloprovincialis.geneid.optimized.U12.param --species human --pasadb human.sqlite --pasa-conf evidence/pipeline_inputs/alignAssembly.v2.5.2.pasa2.config --update-conf evidence/pipeline_inputs/annotCompare_v2.5.2.pasa2.config --transcripts evidence/pipeline_inputs/transcript_evidence.fa
 ```
 
-** Tricks to obtain the different input options: **
+* Tricks to obtain the different input options: *
 
 If you do not know which **geneid parameters** to use, you can download the most appropriate ones from: https://genome.crg.es/software/geneid/index.html#parameters. Also, for Augustus species (--species option), check the available species  already trained for augustus or train your own).
 
