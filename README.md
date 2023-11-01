@@ -12,7 +12,7 @@ bin/create_config_annotation.py -h
 Besides the help, if you are just planning to run it with default parameters, there is also a way to make it  request all the compulsory options:
 
 ```
-/software/assembly/pipelines/Annotation_AAT/bin/create_config_file.annotation.py
+bin/create_config_file.annotation.py
 ERROR Sorry! No masked genome fasta file defined
 ERROR Sorry! No genome fasta file defined
 Sorry! No junctions gff file given.
