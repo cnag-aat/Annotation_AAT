@@ -9,6 +9,25 @@ It needs a config file and a spec file (json file with instructions on which res
 bin/create_config_annotation.py -h
 ```
 
+Besides the help, if you are just planning to run it with default parameters, there is also a way to make it  request all the compulsory options:
+
+```
+/software/assembly/pipelines/Annotation_AAT/bin/create_config_file.annotation.py
+ERROR Sorry! No masked genome fasta file defined
+ERROR Sorry! No genome fasta file defined
+Sorry! No junctions gff file given.
+ERROR Geneid parameter file has not been specified
+ERROR Augustus trained species has not been specified
+ERROR Protein evidence file has not been specified
+Sorry! No pasadb name given
+ERROR Transcript evidence file has not been specified
+ERROR No pasa configuration file found.
+WARNING: Remember to set the create-database parameter to true the first time you run PASA!
+WARNING:no transcripts gtf given, PASA will be run only with the given fasta file
+No annotCompare.config file given!
+Sorry no project name and version have been given
+```
+
 Once the 2 config files are produced, the pipeline can be launched using snakemake (tested and developed for Snakemake v6.3.0) like this:
 
 ``snakemake --notemp -j 999 --snakefile annotation_AAT.smk --configfile annotation.config --is --cluster-conf annotation.spec --use-conda --use-envmodules``
