@@ -28,6 +28,19 @@ No annotCompare.config file given!
 Sorry no project name and version have been given
 ```
 
+The final command would look like this: 
+
+```
+bin/create_config_file.annotation.py --genome evidence/your_assembly.fa --genome-masked evidence/your_masked_assembly.fa --proteins evidence/uniprot_sprot.fasta --geneid-param evidence/pipeline_inputs/M.galloprovincialis.geneid.optimized.U12.param --species human --pasadb human.sqlite --pasa-conf evidence/pipeline_inputs/alignAssembly.v2.5.2.pasa2.config --update-conf evidence/pipeline_inputs/annotCompare_v2.5.2.pasa2.config --transcripts evidence/pipeline_inputs/transcript_evidence.fa
+```
+
+** Tricks to obtain the different input options: **
+
+If you do not know which **geneid parameters** to use, you can download the most appropriate ones from: https://genome.crg.es/software/geneid/index.html#parameters. Also, for Augustus species (--species option), check the available species  already trained for augustus or train your own).
+
+Modify the annotCompare_v2.5.2.pasa2.config and alignAssembly.v2.5.2.pasa2.config config files with the name and path to tha pasa database that the pipeline will create. Examples of this files can be found under the "config_examples/" directory.
+
+
 Once the 2 config files are produced, the pipeline can be launched using snakemake (tested and developed for Snakemake v6.3.0) like this:
 
 ``snakemake --notemp -j 999 --snakefile annotation_AAT.smk --configfile annotation.config --is --cluster-conf annotation.spec --use-conda --use-envmodules``
