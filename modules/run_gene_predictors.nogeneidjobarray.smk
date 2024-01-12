@@ -302,112 +302,112 @@ if config["Parameters"]["run_augustus"] or config["Parameters"]["run_augustus_hi
           logs_dir + str(date) + ".AugustusHints.benchmark.txt"      
         threads: 1
     
-  if config["Parameters"]["run_geneid"]:
-    use rule geneid from gene_predictors_workflow with:
-      input:
-        fasta = masked_reference,
-        geneid_parameters = config["Inputs"]["geneid_parameters"]
-      output:
-        out_prediction_geneid = out_prediction_geneid
-      params:
-        geneid_options = geneid_opts,
-        path =  config["geneid"]["geneid_path"]
-      log:
-        logs_dir + str(date) + ".j%j.Geneid.out",
-        logs_dir + str(date) + ".j%j.Geneid.err",
-      benchmark:
-        logs_dir + str(date) + ".Geneid.benchmark.txt" 
-      threads: 2   
-
-  if config["Parameters"]["run_geneid_introns"]:
-    use rule geneid_introns from gene_predictors_workflow with:
-      input:
-        fasta = masked_reference,
-        geneid_parameters = config["Inputs"]["geneid_parameters"],
-        junctions = config["Outputs"]["output_dir"] + "coding_junctions.sorted.gff3",
-      output:
-        predictions = out_prediction_geneid_introns
-      params:
-        scripts_dir = scripts_dir, 
-        geneid_options = geneid_introns_opts,
-        path =  config["geneid"]["geneid_path"],
-        rmcmd = "cd ../..; rm -r $TMPDIR/geneid_introns"
-      log:
-        logs_dir + str(date) + ".j%j.Geneid_introns.out",
-        logs_dir + str(date) + ".j%j.Geneid_introns.err",
-      benchmark:
-        logs_dir + str(date) + ".Geneid_introns.benchmark.txt" 
-      threads: 2
-
-  if config["Parameters"]["run_genemark"]:
-    use rule genemark from gene_predictors_workflow with:
-      input:
-        fasta = masked_reference,
-      output:
-        out = config["Outputs"]["genemark_prediction"],
-        EVM_out = config["Outputs"]["genemark_preEVM"]
-      params:
-        scripts_dir = scripts_dir, 
-        maxgap = config["genemark"]["gmk_max_gap"], 
-        mincontig = config["genemark"]["gmk_min_contig"], 
-        maxcontig = config["genemark"]["gmk_max_contig"], 
-        add_opts = additional_gmk_opts,
-        EVM_dir = EVM_dir,
-        link_out = EVM_dir + "genemark_predictions.gff3",
-        create_weights_gmk = weights[config["Outputs"]["genemark_preEVM"]],
-        rmcmd = "cd ../..; rm -r $TMPDIR;"
-      envmodules:
-        "GeneMark-ET"
-      log:
-        logs_dir + str(date) + ".j%j.genemark.out",
-        logs_dir + str(date) + ".j%j.genemark.err"
-      benchmark:
-        logs_dir + str(date) + ".genemark.benchmark.txt"
-      threads:  config["genemark"]["gmk_cores"],
-      
-  if config["Parameters"]["run_genemark-ET"]:
-    use rule genemark_ET from gene_predictors_workflow with:
-      input:
-        fasta = masked_reference,
-        hints = config["Outputs"]["output_dir"] + "coding_junctions.sorted.gff3",
-      output:
-        out = config["Outputs"]["genemark_ET_prediction"],
-        EVM_out = config["Outputs"]["genemark_ET_preEVM"]
-      params:
-        scripts_dir = scripts_dir, 
-        maxgap = config["genemark"]["gmk_max_gap"], 
-        mincontig = config["genemark"]["gmk_min_contig"], 
-        maxcontig = config["genemark"]["gmk_max_contig"], 
-        add_opts = additional_gmk_et_opts,
-        EVM_dir = EVM_dir,
-        link_out = EVM_dir + "genemark-ET_predictions.gff3",
-        create_weights_gmk = weights[config["Outputs"]["genemark_ET_preEVM"]],
-        rmcmd = "cd ../..; rm -r $TMPDIR;"
-      envmodules:
-        "GeneMark-ET"
-      log:
-        logs_dir + str(date) + ".j%j.genemark-ET.out",
-        logs_dir + str(date) + ".j%j.genemark-ET.err"
-      benchmark:
-        logs_dir + str(date) + ".genemark-ET.benchmark.txt"
-      threads:  config["genemark"]["gmk_cores"],
-  
-  use rule predictions4EVM from preprocess_workflow with:
+if config["Parameters"]["run_geneid"]:
+  use rule geneid from gene_predictors_workflow with:
     input:
-      gff = "{path}/{name}_gene_prediction.gff3"
+      fasta = masked_reference,
+      geneid_parameters = config["Inputs"]["geneid_parameters"]
     output:
-      EVM_out = "{path}/{name}_preEVM.gff3"
+      out_prediction_geneid = out_prediction_geneid
     params:
-      reformat_cmd = lambda wildcards: reformat[wildcards.path+ "/" + wildcards.name + "_preEVM.gff3"],
-      create_weights = lambda wildcards: weights[wildcards.path + "/" + wildcards.name + "_preEVM.gff3"],
-      EVM_dir = EVM_dir,
-      link_out = EVM_dir + "{name}_predictions.gff3"
-    conda:
-      "../envs/evm.yaml"
+      geneid_options = geneid_opts,
+      path =  config["geneid"]["geneid_path"]
     log:
-      "{path}/logs/" + str(date) + ".j%j.preEVM.{name}.out",
-      "{path}/logs/" + str(date) + ".j%j.preEVM.{name}.err",
+      logs_dir + str(date) + ".j%j.Geneid.out",
+      logs_dir + str(date) + ".j%j.Geneid.err",
     benchmark:
-      "{path}/logs/" + str(date) + ".preEVM.{name}.benchmark.txt"   
-    threads: 1
+      logs_dir + str(date) + ".Geneid.benchmark.txt" 
+    threads: 2   
+
+if config["Parameters"]["run_geneid_introns"]:
+  use rule geneid_introns from gene_predictors_workflow with:
+    input:
+      fasta = masked_reference,
+      geneid_parameters = config["Inputs"]["geneid_parameters"],
+      junctions = config["Outputs"]["output_dir"] + "coding_junctions.sorted.gff3",
+    output:
+      predictions = out_prediction_geneid_introns
+    params:
+      scripts_dir = scripts_dir, 
+      geneid_options = geneid_introns_opts,
+      path =  config["geneid"]["geneid_path"],
+      rmcmd = "cd ../..; rm -r $TMPDIR/geneid_introns"
+    log:
+      logs_dir + str(date) + ".j%j.Geneid_introns.out",
+      logs_dir + str(date) + ".j%j.Geneid_introns.err",
+    benchmark:
+      logs_dir + str(date) + ".Geneid_introns.benchmark.txt" 
+    threads: 2
+
+if config["Parameters"]["run_genemark"]:
+  use rule genemark from gene_predictors_workflow with:
+    input:
+      fasta = masked_reference,
+    output:
+      out = config["Outputs"]["genemark_prediction"],
+      EVM_out = config["Outputs"]["genemark_preEVM"]
+    params:
+      scripts_dir = scripts_dir, 
+      maxgap = config["genemark"]["gmk_max_gap"], 
+      mincontig = config["genemark"]["gmk_min_contig"], 
+      maxcontig = config["genemark"]["gmk_max_contig"], 
+      add_opts = additional_gmk_opts,
+      EVM_dir = EVM_dir,
+      link_out = EVM_dir + "genemark_predictions.gff3",
+      create_weights_gmk = weights[config["Outputs"]["genemark_preEVM"]],
+      rmcmd = "cd ../..; rm -r $TMPDIR;"
+    envmodules:
+      "GeneMark-ET"
+    log:
+      logs_dir + str(date) + ".j%j.genemark.out",
+      logs_dir + str(date) + ".j%j.genemark.err"
+    benchmark:
+      logs_dir + str(date) + ".genemark.benchmark.txt"
+    threads:  config["genemark"]["gmk_cores"],
+      
+if config["Parameters"]["run_genemark-ET"]:
+  use rule genemark_ET from gene_predictors_workflow with:
+    input:
+      fasta = masked_reference,
+      hints = config["Outputs"]["output_dir"] + "coding_junctions.sorted.gff3",
+    output:
+      out = config["Outputs"]["genemark_ET_prediction"],
+      EVM_out = config["Outputs"]["genemark_ET_preEVM"]
+    params:
+      scripts_dir = scripts_dir, 
+      maxgap = config["genemark"]["gmk_max_gap"], 
+      mincontig = config["genemark"]["gmk_min_contig"], 
+      maxcontig = config["genemark"]["gmk_max_contig"], 
+      add_opts = additional_gmk_et_opts,
+      EVM_dir = EVM_dir,
+      link_out = EVM_dir + "genemark-ET_predictions.gff3",
+      create_weights_gmk = weights[config["Outputs"]["genemark_ET_preEVM"]],
+      rmcmd = "cd ../..; rm -r $TMPDIR;"
+    envmodules:
+      "GeneMark-ET"
+    log:
+      logs_dir + str(date) + ".j%j.genemark-ET.out",
+      logs_dir + str(date) + ".j%j.genemark-ET.err"
+    benchmark:
+      logs_dir + str(date) + ".genemark-ET.benchmark.txt"
+    threads:  config["genemark"]["gmk_cores"],
+  
+use rule predictions4EVM from preprocess_workflow with:
+  input:
+    gff = "{path}/{name}_gene_prediction.gff3"
+  output:
+    EVM_out = "{path}/{name}_preEVM.gff3"
+  params:
+    reformat_cmd = lambda wildcards: reformat[wildcards.path+ "/" + wildcards.name + "_preEVM.gff3"],
+    create_weights = lambda wildcards: weights[wildcards.path + "/" + wildcards.name + "_preEVM.gff3"],
+    EVM_dir = EVM_dir,
+    link_out = EVM_dir + "{name}_predictions.gff3"
+  conda:
+    "../envs/evm.yaml"
+  log:
+    "{path}/logs/" + str(date) + ".j%j.preEVM.{name}.out",
+    "{path}/logs/" + str(date) + ".j%j.preEVM.{name}.err",
+  benchmark:
+    "{path}/logs/" + str(date) + ".preEVM.{name}.benchmark.txt"   
+  threads: 1
 

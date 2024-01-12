@@ -17,6 +17,7 @@ rule get_chunks_fasta:
   shell:
       "cd {params.dirChunks};" 
       "{params.scripts_dir}/fasta2chunks.pl -f {input.fasta} -n {params.numberchunks};"
+      "sleep 5m;"
 
 rule merge_gffs:
   input:

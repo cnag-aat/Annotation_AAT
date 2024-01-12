@@ -81,6 +81,33 @@ rule EVM:
     "cd ..; rm -r $dir;"
     "echo 'EVM done!';"
 
+rule EVM2:
+  input:
+    weight_file = "step04_EVM.V01/weights_1.clean.txt",
+    lgenome = "step04_EVM.V01/genome.fa",
+    predictions = "step04_EVM.V01/predictions.gff3",
+    lproteins = "step04_EVM.V01/proteins.gff3",
+    ltranscripts = "step04_EVM.V01/transcripts.gff3",
+    repeats = "step01_RepeatAnnotationPipeline/Repeats.4jb.gff3"
+  output:
+    evm_cds = "step04_EVM2.V01/{params.sample_id}.EVM.cds",
+    evm_pep= "step04_EVM2.V01/{params.sample_id}.EVM.pep",
+    evm_bed= "step04_EVM2.V01/{params.sample_id}.EVM.bed",
+    evm_models = "step04_EVM2.V01/{params.sample_id}.EVM.gff3"
+  params:
+    sample_id = "",
+    software_path = "/software/assembly/conda/EVM2.1.0/EVidenceModeler-v2.1.0/",
+    additional_evm2_opts = "",
+    EVM2_dir = "step04_EVM2.V01",
+  threads: 16
+  conda:
+    "evm2.1.yaml"
+  shell:
+    "mkdir -p {params.EVM2_dir}; cd {params.EVM2_dir};"
+    "export PATH=$PATH:{params.software_path};"
+    "EVidenceModeler --sample_id {params.sample_id} --genome {input.lgenome} --weights {input.weight_file} --gene_predictions {input.predictions} --protein_alignments {input.lproteins} --transcript_alignments {input.ltranscripts} --repeats {input.repeats}" +\
+    " {params.additional_evm2_opts} --segmentSize 100000 --overlapSize 10000 --CPU {threads};"
+
 rule select_EVM:
   input:
     models =  "step04_EVM.V01/evm_weights_1.gff3",
@@ -97,4 +124,4 @@ rule select_EVM:
   shell: 
     "cd {params.EVM_dir};"
     "gawk \'$3==\"exon\"\' {input.base_trans} > reference_exons.gtf;"
-    "{params.scripts_dir}select_best_evm.V03.pl reference_exons.gtf {params.total_weight_files}"
+    "{params.scripts_dir}select_best_evm.V04.pl reference_exons.gtf {input.models};"

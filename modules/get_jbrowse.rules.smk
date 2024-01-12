@@ -19,6 +19,7 @@ rule browse_seq:
         "cd {params.jbrowse_dir};"
         "$CONDA_PREFIX/bin/prepare-refseqs.pl --fasta {input.genome}  --out $PWD;"
         "touch {output.checkpoint};"
+        "sleep 500;"
 
 rule browse_tracks:
     input:
@@ -41,6 +42,7 @@ rule browse_tracks:
         "$CONDA_PREFIX/bin/flatfile-to-json.pl --gff {params.processed_gff} --out $PWD " +\
         " --getSubfeatures --getPhase --getLabel --type {params.type} " +\
         " --trackLabel {params.label} --className {params.className};"
+        "sleep 500;"
         "touch {output.checkpoint};"
 
 rule get_tar:

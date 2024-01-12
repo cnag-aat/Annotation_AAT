@@ -179,7 +179,8 @@ rule geneid:
   threads: 2
   shell:
     "{params.path}bin/geneid -P {input.geneid_parameters} {params.geneid_options} "+\
-    "{input.fasta}  > {output.out_prediction_geneid} "
+    "{input.fasta}  > {output.out_prediction_geneid}; "
+    "sleep 500;"
 
 rule geneid_introns_jobarray:
   input:  
