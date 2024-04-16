@@ -4,10 +4,12 @@ import os
 
 rule augustus_jobarray:
   input:
-    fasta = "assembly.masked.1.fa"
+    fasta = "assembly.masked.1.fa",    
+    trained = "human.trained"
   output:
     touch = "augustus_run.ok" 
   params:
+    config_path="/software/assembly/conda/augustus3.5.0/config/",
     prefix = "assembly.masked",
     out_prediction_augustus = "assembly.masked.augustus_gene_predictions.gff3",
     species = "human",
@@ -26,7 +28,7 @@ rule augustus_jobarray:
     "../envs/augustus3.5.0.yaml"
   threads: 1
   shell:
-      "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
+      "export AUGUSTUS_CONFIG_PATH={params.config_path};"
       "augustus --species={params.species} --alternatives-from-sampling={params.alternatives_from_sampling} " +\
       "--alternatives-from-evidence={params.alternatives_from_evidence} --sample={params.sample} --gff3={params.gff3}" +\
       " --noInFrameStop={params.noInFrameStop} --uniqueGeneId={params.uniqueGeneId} --maxtracks={params.maxtracks} --strand={params.strand}" +\
@@ -36,10 +38,12 @@ rule augustus_jobarray:
 
 rule augustus:
   input:
-    fasta = "assembly.masked.fa"
+    fasta = "assembly.masked.fa",    
+    trained = "human.trained"
   output:
     predictions = "assembly.masked.augustus_gene_predictions.gff3" 
   params:
+    config_path="/software/assembly/conda/augustus3.5.0/config/",
     species = "human",
     alternatives_from_sampling =  "true",
     alternatives_from_evidence =   "true",
@@ -56,7 +60,7 @@ rule augustus:
     "../envs/augustus3.5.0.yaml"
   threads: 1
   shell:
-      "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
+      "export AUGUSTUS_CONFIG_PATH={params.config_path};"
       "augustus --species={params.species} --alternatives-from-sampling={params.alternatives_from_sampling} " +\
       "--alternatives-from-evidence={params.alternatives_from_evidence} --sample={params.sample} --gff3={params.gff3}" +\
       " --noInFrameStop={params.noInFrameStop} --uniqueGeneId={params.uniqueGeneId} --maxtracks={params.maxtracks} --strand={params.strand}" +\
@@ -67,11 +71,13 @@ rule augustus_hints_jobarray:
   input:
     fasta = "assembly.masked.1.fa",
     hints = "junctions.gff3",
-    extrinsic_file = "extrinsic.E.cfg"
+    extrinsic_file = "extrinsic.E.cfg",
+    trained = "human.trained"
   output:
     touch ="augustus_hints_run.ok"
   params:
     scripts_dir = "scripts/",
+    config_path="/software/assembly/conda/augustus3.5.0/config/",
     prefix = "assembly.masked",
     out_prediction_augustus = "assembly.masked.augustus_hints_gene_predictions.gff3",
     species = "human",
@@ -91,9 +97,8 @@ rule augustus_hints_jobarray:
     "../envs/augustus3.5.0.yaml"  
   threads: 1
   shell:
-    "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"
+    "export AUGUSTUS_CONFIG_PATH={params.config_path};"
     "dir=$TMPDIR/$SLURM_ARRAY_JOB_ID.$SLURM_ARRAY_TASK_ID;"
-    "echo $dir;"
     "mkdir -p $dir;"
     "cd $dir;"
     "cp {input.hints} hints.gff;"
@@ -113,11 +118,13 @@ rule augustus_hints:
   input:
     fasta = "assembly.masked.fa",
     hints = "junctions.gff3",
-    extrinsic_file = "extrinsic.E.cfg"
+    extrinsic_file = "extrinsic.E.cfg",
+    trained = "human.trained"
   output:
     predictions = "assembly.masked.augustus_hints_gene_predictions.gff3" 
   params:
     scripts_dir = "scripts/",
+    config_path="/software/assembly/conda/augustus3.5.0/config/",
     species = "human",
     alternatives_from_sampling =  "true",
     alternatives_from_evidence =   "true",
@@ -135,7 +142,7 @@ rule augustus_hints:
     "../envs/augustus3.5.0.yaml"  
   threads: 1
   shell:
-    "export AUGUSTUS_CONFIG_PATH=/software/assembly/conda/augustus3.5.0/config/;"  
+    "export AUGUSTUS_CONFIG_PATH={params.config_path};"
     "mkdir -p $TMPDIR/augustus_hints;"
     "cd $TMPDIR/augustus_hints;"
     "cp {input.hints} hints.gff;"
@@ -172,14 +179,22 @@ rule geneid:
     fasta = "assembly.masked.fa",
     geneid_parameters = "human.params.txt"
   output: 
-    out_prediction_geneid = "assembly.masked.geneid_gene_predictions.gff3",
+    out = "assembly.masked.geneid_gene_predictions.gff3",
+    EVM_out = "step03_annotation_pipeline.V01/gene_predictions/geneid_preEVM.gff3"
   params:
     geneid_options = " -3U ",
-    path = "/software/assembly/src/geneid/"
+    path = "/software/assembly/src/geneid/",
+    EVM_dir = "step04_EVM.V01",
+    link_out = "geneid_predictions.gff3",
+    create_weights = "echo \"PREDICTION\tgeneid_v1.4\t3\">> weights_1.txt;",
   threads: 2
   shell:
     "{params.path}bin/geneid -P {input.geneid_parameters} {params.geneid_options} "+\
-    "{input.fasta}  > {output.out_prediction_geneid}; "
+    "{input.fasta}  > {output.out}; "
+    "grep -v \'#\' {output.out} > {output.EVM_out};"
+    "cd {params.EVM_dir};"
+    "ln -s {output.EVM_out} {params.link_out};"
+    "{params.create_weights}"
     "sleep 500;"
 
 rule geneid_introns_jobarray:
@@ -218,7 +233,8 @@ rule geneid_introns:
     geneid_parameters = "human.params.txt",
     junctions = "junctions.gff3"
   output:
-    predictions = "assembly.masked.geneid_introns_gene_predictions.gff3",
+    out = "assembly.masked.geneid_introns_gene_predictions.gff3",
+    EVM_out = "step03_annotation_pipeline.V01/gene_predictions/geneid_introns_preEVM.gff3"
   params:
     scripts_dir = "scripts/",
     geneid_options = " -3nU ",
@@ -231,15 +247,17 @@ rule geneid_introns:
     "cd $TMPDIR/geneid_introns;"
     "cp {input.junctions} hints.gff;"
     "sort -k1,1 -k4,5n -k7,7 hints.gff > hints.sorted.gff;"
-    "ln -s {input.fasta} masked_genome_chunk.fa;"
+    "ln -s {input.fasta} masked_genome.fa;"
     "cat hints.sorted.gff | cut -f 1 | uniq > seqs_with_hints.ids;"
-    "{params.scripts_dir}/filter_fasta_from_ids.pl -f masked_genome_chunk.fa -l seqs_with_hints.ids -a > masked_genome_chunk.with_hints.fa;"
-    "{params.scripts_dir}/rungeneidwithhints.pl masked_genome_chunk.with_hints.fa hints.sorted.gff " +\
+    "{params.scripts_dir}/filter_fasta_from_ids.pl -f masked_genome.fa -l seqs_with_hints.ids -a > masked_genome.with_hints.fa;"
+    "{params.scripts_dir}/rungeneidwithhints.pl masked_genome.with_hints.fa hints.sorted.gff " +\
     " {input.geneid_parameters} {params.geneid_options} {params.path};"
-    "cat *geneid_introns.gff3  > {output.predictions};"
+    "cat *geneid_introns.gff3  > {output.out};"
     "{params.rmcmd};"
-    # "{params.path}bin/geneid -R {input.junctions} -P {input.geneid_parameters} {params.geneid_options} "+\
-    # "{input.fasta}  > {output.predictions}; "
+    "grep -v \'#\' {output.out} | sed \'s/geneid_v1.4/geneid_introns/g\' > {output.EVM_out};"
+    "cd {params.EVM_dir};"
+    "ln -s {output.EVM_out} {params.link_out};"
+    "{params.create_weights}"
 
 rule genemark:
   input:
@@ -254,7 +272,7 @@ rule genemark:
     maxcontig = 500000,
     add_opts = "",
     EVM_dir = "step04_EVM.V01",
-    link_out = "step04_EVM.V01/genemark_predictions.gff3",
+    link_out = "genemark_predictions.gff3",
     create_weights_gmk = "echo \"PREDICTION\tGeneMark.hmm3\t3\">> weights_1.txt;",
     rmcmd = "cd ../..; rm -r $TMPDIR;"
   envmodules:
@@ -269,7 +287,7 @@ rule genemark:
     "cat {output.out} | {params.scripts_dir}/gtf_to_gff2or3.pl -noaddstop -v 2.5 -ov 3 -mrna "+\
     " | grep -v codon | grep -v \'#\' > {output.EVM_out};"
     "cd {params.EVM_dir};"
-    "ln -s {output.EVM_out} genemark_predictions.gff3;"
+    "ln -s {output.EVM_out} {params.link_out};"
     "{params.create_weights_gmk}"
     "{params.rmcmd}"
 
@@ -287,7 +305,7 @@ rule genemark_ET:
     maxcontig = 500000,
     add_opts = "",
     EVM_dir = "step04_EVM.V01",
-    link_out = "step04_EVM.V01/genemark-ET_predictions.gff3",
+    link_out = "genemark-ET_predictions.gff3",
     create_weights_gmk = "echo \"PREDICTION\tGeneMark-ET\t3\">> weights_1.txt;",
     rmcmd = "cd ../..; rm -r $TMPDIR;",
   envmodules:
@@ -304,6 +322,6 @@ rule genemark_ET:
     "cat {output.out} | {params.scripts_dir}/gtf_to_gff2or3.pl -noaddstop -v 2.5 -ov 3 -mrna | "+\
     " grep -v codon | grep -v '#' | sed 's/GeneMark.hmm3/GeneMark-ET/g' > {output.EVM_out};"
     "cd {params.EVM_dir};"
-    "ln -s {output.EVM_out} genemark-ET_predictions.gff3;"
+    "ln -s {output.EVM_out} {params.link_out};"
     "{params.create_weights_gmk}"
     "{params.rmcmd}"

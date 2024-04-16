@@ -57,10 +57,6 @@ rule lncRNAannotation:
     "gawk \'$3!=\"CDS\"\' *.{params.project}.lnc.{params.version}.gff3 | perl -ane \'chomp;(s/;product=[^\\n]+//); print \"$_\\n\";\' > {output.out};"
     "mv *.{params.project}.lnc.{params.version}.gff3 {params.project}.lnc.{params.version}.gff3;"
     "gawk \'$3==\"transcript\"\' {output.out} > lncRNA_transcripts.nonclassified.gff3;"
-   # "intersectBed -f 0.90 -wo -a {input.RM_gff} -b lncRNA_transcripts.nonclassified.gff3  > RM_BT_lncRNA_90.out;"
-    #"intersectBed -f 0.90 -wo -a lncRNA_transcripts.nonclassified.gff3 -b {input.RM_gff} > lncRNA_BT_RM_90.out;"
-    #"cat lncRNA_BT_RM_90.out | perl -ne \'chomp; if (m/ID=([^;]+)/) {{$gene=$1;}} $gene=~ s/T([0-9]+)$//; if (m/Motif:([^\"]+)/){{$motif=$1;}} print \"$gene\\t$motif\\n\";\' | sort | uniq > nc_RM.ids;"
-    #"cat RM_BT_lncRNA_90.out | perl -ne \'chomp; if (m/ID=([^;]+)/){{$gene=$1;}} $gene=~ s/T([0-9]+)$//;if (m/Family=([^;]+)/) {{$motif=$1;}} print \"$gene\\t$motif\\n\";' | sort | uniq > RM_nc.ids;"
     "{params.scripts_dir}/transcript2seq.pl -gff {output.out} -seq {input.genome};"
     "makeblastdb -in lncRNA_annotation.nonclassified.transcripts.fa -dbtype nucl -out lncRNA_trans_db;"
     "mkdir -p {params.blast_proteins};"
@@ -79,12 +75,14 @@ rule Blast_prot:
   output:    
     "proteins_blast/blast.1.out"
   params:
-    db = "lncRNA_trans_db"
+    db = "lncRNA_trans_db",
+    evalue = "1e-06",
   conda:
-    "../envs/ann_base.yaml"
+    "../envs/blast_bedtools.yaml"
   threads: 4
   shell:
-    "tblastn -outfmt \"6 qseqid sseqid pident length mismatch gapopen qlen qstart qend slen sstart send evalue bitscore\" -num_threads {threads} -query {input} -db {params.db}  > {output};"
+    "tblastn -outfmt \"6 qseqid sseqid pident length mismatch gapopen qlen qstart qend slen sstart send evalue bitscore\" -num_threads {threads} " 
+    " -query {input} -db {params.db} -evalue {params.evalue} > {output};"
 
 rule ncAnnotation:
   input:
@@ -106,8 +104,7 @@ rule ncAnnotation:
     "../envs/ann_base.yaml"  
   shell:
     "cd {params.ncRNA_DIR};"
-    "cat {input.blast} | gawk '$13<0.00001' > {output.out_blast} ;"
-#      "cat {input.blast_next} | gawk '$13<0.00001' > {output.out_next} ;"
+    "cat {input.blast} > {output.out_blast} ;"
     "cat {output.out_blast} | cut -f 2 | perl -ane \'if ($_ =~ s/T([0-9]+)(\\n)//) {{print \"$_\\n\";}}\' | sort |uniq > {params.ncRNA_DIR}/pseudogenes.ids;"
     "{params.scripts_dir}/annotate_ncRNAs.V2.pl {input.cmsearch_out} {input.tRNAscan} {params.project} {params.version} >  {output.snc_out};"
     "gawk \'$3==\"ncRNA\"\' {output.snc_out} > {params.ncRNA_DIR}smallncRNA_annotation.transcripts.gff3;"

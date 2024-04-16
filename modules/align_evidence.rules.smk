@@ -25,8 +25,7 @@ rule pasa:
     "PATH=$PASAHOME/bin:$PATH;"
     "ln -s {input.transcripts} transcripts.fa;"
     "$PASAHOME/Launch_PASA_pipeline.pl -c {input.config_file} -R -g {input.genome} " +\
-    " --ALIGNERS {params.aligners} -t transcripts.fa --CPU {threads} --trans_gtf {input.trans_gtf}" +\
-    " {params.additional_pasa_opts};" 
+    " --ALIGNERS {params.aligners} -t transcripts.fa --CPU {threads} {params.additional_pasa_opts};" 
     "ln -s {output.pasa_out} {output.EVM_out};"
     "cd {params.EVM_dir};"
     "{params.create_weights}"
