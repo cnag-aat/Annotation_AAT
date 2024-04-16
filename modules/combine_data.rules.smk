@@ -98,15 +98,26 @@ rule EVM2:
     sample_id = "",
     software_path = "/software/assembly/conda/EVM2.1.0/EVidenceModeler-v2.1.0/",
     additional_evm2_opts = "",
-    EVM2_dir = "step04_EVM2.V01",
+    EVM_dir = "step04_EVM2.V01",
+    evidence_opts = "--protein_alignments proteins.gff3 --transcript_alignments transcripts.gff3",
+    segmentSize = "100000",
+    overlapSize = "10000",
+    rmcmd = "rm -r $TMPDIR/evm."
   threads: 16
   conda:
-    "evm2.1.yaml"
+    "../envs/evm2.1.yaml"
   shell:
-    "mkdir -p {params.EVM2_dir}; cd {params.EVM2_dir};"
+    "dir=$TMPDIR/evm.{params.sample_id}; mkdir -p $dir;"
+    "cd $dir;"
     "export PATH=$PATH:{params.software_path};"
-    "EVidenceModeler --sample_id {params.sample_id} --genome {input.lgenome} --weights {input.weight_file} --gene_predictions {input.predictions} --protein_alignments {input.lproteins} --transcript_alignments {input.ltranscripts} --repeats {input.repeats}" +\
-    " {params.additional_evm2_opts} --segmentSize 100000 --overlapSize 10000 --CPU {threads};"
+    "EVidenceModeler --sample_id {params.sample_id} --genome {input.lgenome} --weights {input.weight_file} --gene_predictions {input.predictions} " +\
+    " {params.evidence_opts} --repeats {input.repeats}" +\
+    " {params.additional_evm2_opts} --segmentSize {params.segmentSize} --overlapSize {params.overlapSize} --CPU {threads};"
+    "cp {params.sample_id}.EVM.cds {output.evm_cds};"
+    "cp {params.sample_id}.EVM.pep {output.evm_pep};"
+    "cp {params.sample_id}.EVM.bed {output.evm_bed};"
+    "cp {params.sample_id}.EVM.gff3 {output.evm_models};"
+    "{params.rmcmd};"
 
 rule select_EVM:
   input:
@@ -117,11 +128,12 @@ rule select_EVM:
   params:
     EVM_dir = "step04_EVM.V01",
     scripts_dir = "../scripts/",
-    total_weight_files = 1
+    total_weight_files = 1,
+    reference_field = "exon"
   threads: 1
   conda:
     "../envs/bedtools2.30.0.yaml"
   shell: 
     "cd {params.EVM_dir};"
-    "gawk \'$3==\"exon\"\' {input.base_trans} > reference_exons.gtf;"
+    "gawk \'$3==\"{params.reference_field}\"\' {input.base_trans} > reference_exons.gtf;"
     "{params.scripts_dir}select_best_evm.V04.pl reference_exons.gtf {input.models};"

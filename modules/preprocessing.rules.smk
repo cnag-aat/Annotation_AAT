@@ -15,6 +15,7 @@ rule get_chunks_fasta:
     '../envs/ann_base.yaml'
   threads: 2
   shell:
+      "mkdir -p {params.dirChunks};"
       "cd {params.dirChunks};" 
       "{params.scripts_dir}/fasta2chunks.pl -f {input.fasta} -n {params.numberchunks};"
       "sleep 5m;"
@@ -29,7 +30,7 @@ rule merge_gffs:
   threads: 1
   shell: 
     "cat {params.array_inputs} > {output.out};"
-    "sleep 4m;"
+    "sleep 5m;"
 
 rule predictions4EVM:
   input:

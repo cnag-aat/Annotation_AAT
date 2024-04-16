@@ -1,0 +1,8 @@
+name: /software/assembly/conda/STAR2.7.10a
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - star=2.7.10a=h9ee0642_0
+prefix: /software/assembly/conda/STAR2.7.10a
